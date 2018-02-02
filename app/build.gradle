@@ -1,8 +1,32 @@
+//apply plugin：第一行代码应用了 Android 程序的 gradle 插件，作为 Android 的应用程序，这一步是必须的，因为 plugin 中提供了 Android 编译、测试、打包等等的所有task。
 apply plugin: 'com.android.application'
 
+//android：这是编译文件中最大的代码块，关于 android 的所有特殊配置都在这里，这就是由我们前面声明的plugin提供的。
 android {
     compileSdkVersion 26
+
+    /**
+     * 前面我们都是针对同一份源码编译同一个程序的不同类型，如果我们要针对同一份源码编译不同的程序（包名也不同，比如免费版和收费版），就需要用到 productFlavors 了。
+     * productFlavors 和 buildTypes 是不一样的，而且他们的属性也不一样。
+     * 所有的productFlavors 版本和 defaultConfig 共享所有属性。
+     */
+    productFlavors {
+        flavorDimensions("price")
+        productFlavors {
+            free {
+                flavorDimensions("price")
+            }
+            paid {
+                flavorDimensions("price")
+            }
+        }
+    }
+
+    /**
+     * defaultConfig：就是程序的默认配置，注意，如果在AndroidMainfest.xml里面定义了与这里相同的属性，会以这里的为主。
+     */
     defaultConfig {
+        //applicationId：程序的唯一标识。（曾经定义的 AndroidMainfest.xml 中，那里定义的包名有两个用途：1.作为程序的唯一标识；2.作为我们R资源类的包名）
         applicationId "com.example.zhaodanyang.knowledge_gradle"
         minSdkVersion 15
         targetSdkVersion 26
@@ -10,16 +34,39 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    /**
+     * 签名配置
+     */
+    signingConfigs {
+        releaseConfig {
+            storeFile file('/Users/zhaodanyang/StudioProjects/android-architecture-todo-mvvm-databinding/Knowledge_Gradle/keystore.jks')
+            storePassword "icourt@123"
+            keyPassword "icourt@123"
+            keyAlias "keystore"
+        }
+    }
+
+    /**
+     * buildTypes：定义了编译类型，针对每个类型我们可以有不同的编译配置，不同的编译配置对应的有不同的编译命令（如：debug、release的类型）。
+     */
     buildTypes {
         release {
+            signingConfig signingConfigs.releaseConfig
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField("String", "API_URL", "\"www.google.com\"")
+            buildConfigField("boolean", "LOG_SHOW", "false")
+            resValue("string", "test", "test")
         }
     }
 }
 
+/**
+ * 我们在使用引入库的时候，每个库名包含三个元素：组名:库名称:版本号。
+ */
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
