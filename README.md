@@ -5,10 +5,11 @@
 ## Gradle的编译周期
 
 在解析 Gradle 的编译过程之前我们需要理解在 Gradle 中非常重要的两个对象：**project**和**task**。  
-* 每个项目的编译都至少有一个project，一个build.gradle就代表一个project；
-* 每个project又包含多个task；
-* 每个task又包含多个action；
-* 每个action是一个代码块，里面包含需要被执行的代码。  
+Gradle 中，每一个待编译的工程都叫一个 project 。每一个 project 在构建的时候都包含一系列的 task。比如一个 Android APK 的编译可能包含：Java源码编译 task、资源编译 task、JNI 编译 task、lint检查 task、打包生成 APK 的 task、签名 task 等。插件本身就是包含了若干 task 的。  
+* 每个项目的编译都至少有一个 project，一个 build.gradle 就代表一个 project；
+* 每个 project 又包含多个 task；
+* 每个 task 又包含多个 action；
+* 每个 action 是一个代码块，里面包含需要被执行的代码。  
 
 在编译过程中，Gradle 会根据 build 相关文件，聚合所有 project 和 task，执行 task 中的 action。  
 因为 build.gradle 文件中的 task 非常多，先执行哪个后执行哪个需要一种逻辑来保证，这逻辑就是**依赖逻辑**。  
@@ -209,7 +210,7 @@ apply plugin: 'com.android.library'
 ## 多样化编译 - Build Variants
 在开发过程中经产会遇到这样的需求：  
 * 我们需要在 debug 和 release 两种情况下配置不同的服务器地址；
-* 当打市场渠道包的时候，我们可能需要打免费版、收费版，或者内部版、外部版的程序。
+* 当打市场渠道包的时候，我们可能需要打免费版、收费版，或者内部版、外部版的程序；
 * 为了让市场版和 debug 版同时存在与一个手机，我们需要编译的时候自动给 debug 版本不一样的包名。
 
 ### 1.Build Type
@@ -225,10 +226,63 @@ buildTypes {
     }
 ```
 
-### 2.Product flavors
+### 2.Product flavors  
+前面我们都是针对同一份源码编译同一个程序的不同类型，如果我们要针对同一份源码编译不同的程序（包名也不同，比如免费版和收费版），就需要用到 productFlavors 了。  
+productFlavors 和 buildTypes 是不一样的，而且他们的属性也不一样。  
+所有的 productFlavors 版本和 defaultConfig 共享所有属性。  
+productFlavors 字面意思就是：产品多样性，通常我们都会用它来进行多渠打包操作。  
+看下面这个 demo 展示了productFlavors的组合使用方式：  
 
+```
+android{
 
+    defaultConfig {
+        versionNameSuffix "DefaultConfig"
+    }
 
+    //这里定义了两个维度：price、level。
+    //这两个维度又分别定义了两种类型：price - free、paid；size - big、small。
+    //这两种维度可以两两组合成你所想要的生成的打包对象。
+    flavorDimensions("price", "size")
+    productFlavors {
+        free {
+            dimension("price")
+            versionNameSuffix "Free"
+        }
+        paid {
+            dimension("price")
+            versionNameSuffix "Paid"
+        }
+        big {
+            dimension("size")
+            versionNameSuffix "Big"
+        }
+        small {
+            dimension("size")
+            versionNameSuffix "Small"
+        }
+    }
+    
+    buildTypes {
+        debug {
+            versionNameSuffix "-debug"
+        }
+    }
+}
+```
+配置完 build 一下，这时我们可以看到 Build Variant 下面生成了多种组合方式：  
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/productFlavors.png)
+上面的代码中，我们在 defaultConfig、productFlavors、buildTypes 中都使用 versionNameSuffix 为 versionName 添加了后缀名，然后选中 paidBigDebug 这一 Build Variant ，安装到测试机上，通过log打印 **BuildConfig.VERSION_NAME**，可以看到打印结果是：  
+```
+1.0DefaultConfigPaidBig-debug
+```
+通过log打印可以看出，编译的顺序是： defaultConfig -> productFlavors -> buildTypes。  
+
+### 3.Source Sets  
+每当创建一个新的 buildType 的时候，gradle 默认都会创建一个新的 source set。我们可以建立与 main 文件夹同级的文件夹，根据编译类型的不同我们可以选择对某些源码直接进行替换。  
+其实，对应 productFlavors ，我们也可以创建对应的 source set。  
+要注意的是：创建的 source set 必须要和对应的 buildType 或 productFlavors 名称对应上。  
+下图我们创建了对应 debug、release 这两种 buildType 以及对应 free、paid 这两种 productFlavors 的 source set：  
 
 
 
