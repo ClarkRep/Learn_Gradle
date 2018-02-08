@@ -374,7 +374,8 @@ distributionUrl=https\://services.gradle.org/distributions/gradle-4.2.1-all.zip
 * lib_a 引用库中有个 ALibUtils 工具类，lib_b 库中有个 BLibUtils；
 * app implementation lib_a
 * 如果 lib_a implementation lib_b，在 app 项目中是无法引用到 lib_b 库中的 BLibUtils 工具类；
-* 如果 lib_a api lib_b，那么在 app 中就可以引用到 lib_b 库中的 BLibUtils 工具类了。  
+* 如果 lib_a api lib_b，那么在 app 中就可以引用到 lib_b 库中的 BLibUtils 工具类了。   
+
 使用 implementation 是提升编译速度的关键。如果没有必要引用间接内容的话，应该尽量使用 implementation。  
 另外，原先的 provided 现在改名为 compileOnly，并新增了 runtimeOnly。
 
