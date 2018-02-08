@@ -20,6 +20,19 @@ android {
         versionNameSuffix "DefaultConfig"
     }
 
+    /**
+     * gradle3.0修改生成apk名称的修改方式，添加了生成apk的日期时间
+     */
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith(".apk")) {
+                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}_${getApkFormatDate()}.apk")
+                output.outputFileName = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+
     //从本地文件获取签名信息
     Properties properties = new Properties()
     InputStream inputStream = project.rootProject.file("private.properties").newDataInputStream()
@@ -105,6 +118,10 @@ android {
             resValue("string", "test", "release")
         }
     }
+}
+
+def getApkFormatDate() {
+    return new Date().format("yyyy_MM_dd_HH_mm", TimeZone.getDefault())
 }
 
 /**
