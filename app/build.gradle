@@ -6,23 +6,6 @@ android {
     compileSdkVersion 26
 
     /**
-     * 前面我们都是针对同一份源码编译同一个程序的不同类型，如果我们要针对同一份源码编译不同的程序（包名也不同，比如免费版和收费版），就需要用到 productFlavors 了。
-     * productFlavors 和 buildTypes 是不一样的，而且他们的属性也不一样。
-     * 所有的productFlavors 版本和 defaultConfig 共享所有属性。
-     */
-    productFlavors {
-        flavorDimensions("price")
-        productFlavors {
-            free {
-                flavorDimensions("price")
-            }
-            paid {
-                flavorDimensions("price")
-            }
-        }
-    }
-
-    /**
      * defaultConfig：就是程序的默认配置，注意，如果在AndroidMainfest.xml里面定义了与这里相同的属性，会以这里的为主。
      */
     defaultConfig {
@@ -33,6 +16,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        versionNameSuffix "DefaultConfig"
     }
 
     /**
@@ -48,16 +33,71 @@ android {
     }
 
     /**
+     * 多渠道打包
+     * 前面我们都是针对同一份源码编译同一个程序的不同类型，如果我们要针对同一份源码编译不同的程序（包名也不同，比如免费版和收费版），就需要用到 productFlavors 了。
+     * productFlavors 和 buildTypes 是不一样的，而且他们的属性也不一样。
+     * 所有的 productFlavors 版本和 defaultConfig 共享所有属性。
+     */
+    //这里定义了两个维度：price、level。
+    //这两个维度又分别定义了两种类型：price - free、paid；size - big、small。
+    //这两种维度可以两两组合成你所想要的生成的打包对象。
+    flavorDimensions("price", "size")
+    productFlavors {
+        free {
+            dimension("price")
+            versionNameSuffix "Free"
+        }
+        paid {
+            dimension("price")
+            versionNameSuffix "Paid"
+        }
+        big {
+            dimension("size")
+            versionNameSuffix "Big"
+        }
+        small {
+            dimension("size")
+            versionNameSuffix "Small"
+        }
+    }
+
+    /**
      * buildTypes：定义了编译类型，针对每个类型我们可以有不同的编译配置，不同的编译配置对应的有不同的编译命令（如：debug、release的类型）。
      */
     buildTypes {
-        release {
-            signingConfig signingConfigs.releaseConfig
+
+        debug {
             minifyEnabled false
+
+            //当编译debug版本时，applicationId添加后缀：.debug。
+            applicationIdSuffix ".debug"
+            //当编译debug版本时，给版本名称添加后缀：-debug。
+            versionNameSuffix "-debug"
+
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            //配置debug环境下API_URL所对应的String
+            buildConfigField("String", "API_URL", "\"www.baidu.com\"")
+            //配置debug环境下LOG_SHOW所对应的boolean
+            buildConfigField("boolean", "LOG_SHOW", "true")
+            //配置debug环境下test字符串资源文件（第二个参数不能在strings.xml中存在，否则编译会失败）
+            resValue("string", "test", "debug")
+        }
+
+        release {
+            //配置 release 版本的签名配置
+            signingConfig signingConfigs.releaseConfig
+
+            minifyEnabled false
+
+            applicationIdSuffix ".release"
+            versionNameSuffix "-release"
+
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
             buildConfigField("String", "API_URL", "\"www.google.com\"")
             buildConfigField("boolean", "LOG_SHOW", "false")
-            resValue("string", "test", "test")
+            resValue("string", "test", "release")
         }
     }
 }

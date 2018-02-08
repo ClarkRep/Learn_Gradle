@@ -12,9 +12,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         String apiUrl = BuildConfig.API_URL;
-        Log.i("haha", apiUrl);
+        Log.i("haha", "aipUrl：" + apiUrl);
 
         String string = getResources().getString(R.string.test);
-        Log.i("haha", string);
+        Log.i("haha", "test的值：" + string);
+
+        String versionName = BuildConfig.VERSION_NAME;
+        Log.i("haha", "versionName：" + versionName);
+
+        String appName = getResources().getString(R.string.app_name);
+        Log.i("haha", "appName：" + appName);
     }
 }
