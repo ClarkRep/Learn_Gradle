@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.example.lib_a.ALibUtils;
+import com.example.lib_b.BLibUtils;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -22,5 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
         String appName = getResources().getString(R.string.app_name);
         Log.i("haha", "appName：" + appName);
+
+        ALibUtils.showToast(getApplicationContext());
+        BLibUtils.showToast(getApplicationContext());
     }
 }

@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Knowledge_Gradle.iml" filepath="$PROJECT_DIR$/Knowledge_Gradle.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lib_a/lib_a.iml" filepath="$PROJECT_DIR$/lib_a/lib_a.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lib_b/lib_b.iml" filepath="$PROJECT_DIR$/lib_b/lib_b.iml" />
     </modules>
   </component>
 </project>
