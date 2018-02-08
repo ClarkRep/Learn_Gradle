@@ -105,6 +105,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
 ```
+
 ## Gradle Wrapper  
 
 下图是一个 Android 项目所对应的 gradle wrapper 目录位置：  
@@ -271,7 +272,7 @@ android{
 }
 ```
 配置完 build 一下，这时我们可以看到 Build Variant 下面生成了多种组合方式：  
-![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/productFlavors.png)
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/product_flavors.png)
 上面的代码中，我们在 defaultConfig、productFlavors、buildTypes 中都使用 versionNameSuffix 为 versionName 添加了后缀名，然后选中 paidBigDebug 这一 Build Variant ，安装到测试机上，通过log打印 **BuildConfig.VERSION_NAME**，可以看到打印结果是：  
 ```
 1.0DefaultConfigPaidBig-debug
@@ -279,13 +280,124 @@ android{
 通过log打印可以看出，编译的顺序是： defaultConfig -> productFlavors -> buildTypes。  
 
 ### 3.Source Sets  
-每当创建一个新的 buildType 的时候，gradle 默认都会创建一个新的 source set。我们可以建立与 main 文件夹同级的文件夹，根据编译类型的不同我们可以选择对某些源码直接进行替换。  
-其实，对应 productFlavors ，我们也可以创建对应的 source set。  
-要注意的是：创建的 source set 必须要和对应的 buildType 或 productFlavors 名称对应上。  
+每当创建一个新的 buildType 的时候，gradle 默认都会创建一个新的 source set。我们可以建立与 main 文件夹同级的文件夹，根据编译类型的不同我们可以选择对某些源码直接进行替换。  
+其实，对应 productFlavors ，我们也可以创建对应的 source set。  
+要注意的是：创建的 source set 必须要和对应的 buildType 或 productFlavors 名称对应上。  
 下图我们创建了对应 debug、release 这两种 buildType 以及对应 free、paid 这两种 productFlavors 的 source set：  
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/source_sets.png)  
+分别在 debug、release、free、paid 对应的 source set 下的 res -> values -> strings.xml：修改 app_name 字符串的值为 Knowledge_Gradle_Debug、Knowledge_Gradle_Release、Knowledge_Gradle_Free、Knowledge_Gradle_Paid。  
+* 运行 freeBigDebug 版本，log 打印出app_name：  
+```
+Knowledge_Gradle_Debug
+```
+* 运行 paidBigRelease 版本，log 打印出app_name：  
+```
+Knowledge_Gradle_Release
+```
+我们会发现程序只取了 debug 和 release 资源文件下的 app_name ，并没有取 free 和 paid 的 app_name 的值，在打包编译的过程中，会先进行资源文件的合并，而资源文件的合并是有优先级的。  
+Resource merge priority  
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/source_set_priority.png)
+从上图可以看到，buildTypes 的资源优先级最高，productFlavors 次之，main 第三，引用的第三方库的资源优先级最低。  
+所以上面的 demo 在打印的时候只打印的 debug 和 release 中的资源。  
 
+### 4.Signing Configurations  
+如果我们打包市场版的时候，我们需要输入我们的 keystore 数据。这些信息在 gradle 中都配置在 signingConfigs 中：
+```
+android{
+    signingConfigs {
+        releaseConfig {
+            storeFile file("keystore.jks")
+            storePassword "storePassword"
+            keyPassword "keyPassword"
+            keyAlias "keyAlias"
+        }
+    }
+}
+```
+然后在 buildTypes中配置：
+```
+android{
+     buildTypes {
+        release{
+             signingConfig signingConfigs.releaseConfig    
+        }
+     }
+}
+```
+这里直接将 store 的密码明文写在这里对于产品的安全性来说不太好，特别是如果该源码开源，别人就可以用你的 id 去发布app。所以我们可以通过配置一个本地文件用来存储密码信息，将这个配置文件本地保存，不用上传到服务器上：
+```
+android{
+    Properties properties = new Properties()
+    InputStream inputStream = project.rootProject.file("private.properties").newDataInputStream()
+    properties.load(inputStream)
 
+    /**
+     * 签名配置
+     */
+    signingConfigs {
+        releaseConfig {
+            storeFile file("keystore.jks")
+            storePassword properties.getProperty(properties.getProperty("storePassword"))
+            keyPassword properties.getProperty("keyPassword")
+            keyAlias properties.getProperty("keyAlias")
+        }
+    }
+}
+```
 
+## Gradle3.0新特性
+Gradle3.0 的发布，它也提供了一些新的特性。如何升级到gradle3.0呢？
+
+### 1.更新 gradle 版本
+
+* **顶层的build.gradle** 中更新 gradle 版本  
+```
+buildscript {
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+    }
+}
+```
+
+* 更新**gradle wrapper**  
+propertiesgradle -> wrapper -> gradle-wrapper.properties 中修改为：
+```
+distributionUrl=https\://services.gradle.org/distributions/gradle-4.2.1-all.zip
+```
+官方默认搭配是 gradle 4.1，如果换成 4.2.1 正式版，速度将更快。
+
+### 2.修改编译方式
+原先的 compile 关键词现在变成了 api，但一般情况下不应该使用 api，因为 api 是会向外暴露你引用的依赖，这样会导致 gradle 编译时需要频繁遍历所有嵌套依赖是否有变更，影响编译速度。  
+更推荐的是使用 implementation 替代原先的 compile，implementation 和 api 的区别就是不会暴露引用的依赖。  
+如下图：  
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/lib_implementation.png)  
+* lib_a 引用库中有个 ALibUtils 工具类，lib_b 库中有个 BLibUtils；
+* app implementation lib_a
+* 如果 lib_a implementation lib_b，在 app 项目中是无法引用到 lib_b 库中的 BLibUtils 工具类；
+* 如果 lib_a api lib_b，那么在 app 中就可以引用到 lib_b 库中的 BLibUtils 工具类了。  
+使用 implementation 是提升编译速度的关键。如果没有必要引用间接内容的话，应该尽量使用 implementation。  
+另外，原先的 provided 现在改名为 compileOnly，并新增了 runtimeOnly。
+
+### 3.设置编译生成文件名  
+Gradle 3.0 更改了设置编译生成应用文件名称的方式，新的方式和原先相比略为不同，但更简单直观。
+如下，我们在打包生成 apk 的时候，如何将打包时间也生成在 apk 包名上：  
+```
+android{
+     applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def outputFile = output.outputFile
+            if (outputFile != null && outputFile.name.endsWith(".apk")) {
+                def fileName = outputFile.name.replace(".apk", "-${defaultConfig.versionName}_${getApkFormatDate()}.apk")
+                output.outputFileName = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+}
+
+def getApkFormatDate() {
+    return new Date().format("yyyy_MM_dd_HH_mm", TimeZone.getDefault())
+}
+```
 
 ## 参考资料：
 [Gradle 完整指南（Android）](https://www.jianshu.com/p/9df3c3b6067a)
