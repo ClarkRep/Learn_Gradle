@@ -272,7 +272,7 @@ android{
 }
 ```
 配置完 build 一下，这时我们可以看到 Build Variant 下面生成了多种组合方式：  
-![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/product_flavors.png)
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/product_flavors.png)  
 上面的代码中，我们在 defaultConfig、productFlavors、buildTypes 中都使用 versionNameSuffix 为 versionName 添加了后缀名，然后选中 paidBigDebug 这一 Build Variant ，安装到测试机上，通过log打印 **BuildConfig.VERSION_NAME**，可以看到打印结果是：  
 ```
 1.0DefaultConfigPaidBig-debug
@@ -284,7 +284,7 @@ android{
 其实，对应 productFlavors ，我们也可以创建对应的 source set。  
 要注意的是：创建的 source set 必须要和对应的 buildType 或 productFlavors 名称对应上。  
 下图我们创建了对应 debug、release 这两种 buildType 以及对应 free、paid 这两种 productFlavors 的 source set：  
-![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/source_sets.png)  
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/source_sets.png)  
 分别在 debug、release、free、paid 对应的 source set 下的 res -> values -> strings.xml：修改 app_name 字符串的值为 Knowledge_Gradle_Debug、Knowledge_Gradle_Release、Knowledge_Gradle_Free、Knowledge_Gradle_Paid。  
 * 运行 freeBigDebug 版本，log 打印出app_name：  
 ```
@@ -296,7 +296,7 @@ Knowledge_Gradle_Release
 ```
 我们会发现程序只取了 debug 和 release 资源文件下的 app_name ，并没有取 free 和 paid 的 app_name 的值，在打包编译的过程中，会先进行资源文件的合并，而资源文件的合并是有优先级的。  
 Resource merge priority  
-![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/source_set_priority.png)
+![](https://raw.githubusercontent.com/zdy793410600/Knowledge_Gradle/master/img/source_set_priority.png)  
 从上图可以看到，buildTypes 的资源优先级最高，productFlavors 次之，main 第三，引用的第三方库的资源优先级最低。  
 所以上面的 demo 在打印的时候只打印的 debug 和 release 中的资源。  
 
