@@ -1,6 +1,8 @@
+[toc]
+
 # Knowledge_Gradle
 
-这个项目介绍了一些Gradle的常用配置
+这个项目介绍了一些Gradle的常用配置  
 
 ## Gradle的编译周期
 
