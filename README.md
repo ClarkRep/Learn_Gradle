@@ -401,4 +401,5 @@ def getApkFormatDate() {
 ```
 
 ## 参考资料：
-[Gradle 完整指南（Android）](https://www.jianshu.com/p/9df3c3b6067a)
+[Gradle 完整指南（Android）](https://www.jianshu.com/p/9df3c3b6067a)  
+[Android Studio 和 Gradle 3.0.0 更新简明指南](http://drakeet.me/android-studio-and-gradle-3-0-guide/)
