@@ -35,7 +35,7 @@ android {
 
     //从本地文件获取签名信息
     Properties properties = new Properties()
-    InputStream inputStream = project.rootProject.file("private.properties").newDataInputStream()
+    InputStream inputStream = project.rootProject.file("local.properties").newDataInputStream()
     properties.load(inputStream)
 
     /**
